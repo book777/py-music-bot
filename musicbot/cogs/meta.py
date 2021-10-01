@@ -1,8 +1,8 @@
-from discord.ext import commands
-import discord
 from datetime import datetime
-from .. import util
 
+from discord.ext import commands
+
+from musicbot import util
 
 class Meta(commands.Cog):
     """Commands relating to the bot itself."""

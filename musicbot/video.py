@@ -29,6 +29,7 @@ class Video:
         with ytdl.YoutubeDL(YTDL_OPTS) as ydl:
             info = ydl.extract_info(video_url, download=False)
             video = None
+            #TODO support playlist
             if "_type" in info and info["_type"] == "playlist":
                 return self._get_info(
                     info["entries"][0]["url"])  # get info for first video

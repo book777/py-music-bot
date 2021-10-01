@@ -1,7 +1,6 @@
-import discord
-import sys
 import traceback
 import logging
+
 from discord.ext import commands
 
 
@@ -28,7 +27,7 @@ class CommandErrorHandler(commands.Cog):
 
         await ctx.send(
             "An unexpected error occurred while running that command.")
-        logging.warn("Ignoring exception in command {}:".format(ctx.command))
-        logging.warn("\n" + "".join(
+        logging.warning("Ignoring exception in command {}:".format(ctx.command))
+        logging.warning("\n" + "".join(
             traceback.format_exception(
                 type(error), error, error.__traceback__)))

@@ -1,11 +1,12 @@
-from discord.ext import commands
-import discord
 import asyncio
-import youtube_dl
 import logging
 import math
-from urllib import request
-from ..video import Video
+
+from discord.ext import commands
+import discord
+import youtube_dl
+
+from musicbot.video import Video
 
 # TODO: abstract FFMPEG options into their own file?
 FFMPEG_BEFORE_OPTS = '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'
@@ -47,6 +48,19 @@ async def is_audio_requester(ctx):
     else:
         raise commands.CommandError(
             "You need to be the song requester to do that.")
+
+
+def _queue_text(queue):
+    """Returns a block of text describing a given song queue."""
+    if len(queue) > 0:
+        message = [f"{len(queue)} songs in queue:"]
+        message += [
+            f"  {index+1}. **{song.title}** (requested by **{song.requested_by.name}**)"
+            for (index, song) in enumerate(queue)
+        ]  # add individual songs
+        return "\n".join(message)
+    else:
+        return "The play queue is empty."
 
 
 class Music(commands.Cog):
@@ -97,7 +111,7 @@ class Music(commands.Cog):
         else:
             client.pause()
 
-    @commands.command(aliases=["vol", "v"])
+    @commands.command(name="volume", aliases=["vol", "v"])
     @commands.guild_only()
     @commands.check(audio_playing)
     @commands.check(in_voice_channel)
@@ -188,25 +202,13 @@ class Music(commands.Cog):
         message = await ctx.send("", embed=state.now_playing.get_embed())
         await self._add_reaction_controls(message)
 
-    @commands.command(aliases=["q", "playlist"])
+    @commands.command(name="queue", aliases=["q", "playlist"])
     @commands.guild_only()
     @commands.check(audio_playing)
     async def queue(self, ctx):
         """Display the current play queue."""
         state = self.get_state(ctx.guild)
-        await ctx.send(self._queue_text(state.playlist))
-
-    def _queue_text(self, queue):
-        """Returns a block of text describing a given song queue."""
-        if len(queue) > 0:
-            message = [f"{len(queue)} songs in queue:"]
-            message += [
-                f"  {index+1}. **{song.title}** (requested by **{song.requested_by.name}**)"
-                for (index, song) in enumerate(queue)
-            ]  # add individual songs
-            return "\n".join(message)
-        else:
-            return "The play queue is empty."
+        await ctx.send(_queue_text(state.playlist))
 
     @commands.command(aliases=["cq"])
     @commands.guild_only()
@@ -228,7 +230,7 @@ class Music(commands.Cog):
             song = state.playlist.pop(song - 1)  # take song at index...
             state.playlist.insert(new_index - 1, song)  # and insert it.
 
-            await ctx.send(self._queue_text(state.playlist))
+            await ctx.send(_queue_text(state.playlist))
         else:
             raise commands.CommandError("You must use a valid index.")
 
@@ -244,7 +246,7 @@ class Music(commands.Cog):
             try:
                 video = Video(url, ctx.author)
             except youtube_dl.DownloadError as e:
-                logging.warn(f"Error downloading video: {e}")
+                logging.warning(f"Error downloading video: {e}")
                 await ctx.send(
                     "There was an error downloading your video, sorry.")
                 return

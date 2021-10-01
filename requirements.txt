@@ -1,0 +1,4 @@
+toml~=0.10.2
+youtube-dl
+discord.py
+pynacl

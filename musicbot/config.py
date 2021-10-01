@@ -1,6 +1,7 @@
-import toml
 import logging
 import os
+
+import toml
 
 EXAMPLE_CONFIG = """\"token\"=\"\" # the bot's token
 \"prefix\"=\"!\" # prefix used to denote commands
@@ -23,7 +24,7 @@ def load_config(path="./config.toml"):
     else:
         with open(path, "w") as config:
             config.write(EXAMPLE_CONFIG)
-            logging.warn(
+            logging.warning(
                 f"No config file found. Creating a default config file at {path}"
             )
         return load_config(path=path)
